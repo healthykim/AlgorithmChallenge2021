@@ -8,6 +8,9 @@
 namespace {
 std::vector<Label> transferred_label;
 void TransferLabel(const std::string &filename) {
+    //initialize transferred_label array by order(tranferred_label[smallest label] <- 0)
+    //i don't know why TA did this job.
+    //possibility : given label value is too large
   std::ifstream fin(filename);
 
   if (!fin.is_open()) {
@@ -45,6 +48,7 @@ void TransferLabel(const std::string &filename) {
 
   Label new_label = 0;
   for (Label l : label_set) {
+     // std::cout<<l<<std::endl;
     transferred_label[l] = new_label;
     new_label += 1;
   }
@@ -52,7 +56,9 @@ void TransferLabel(const std::string &filename) {
 }  // namespace
 
 Graph::Graph(const std::string &filename, bool is_query) {
-  if (!is_query) {
+
+    if (!is_query) {
+        //if !is_query, transferred_label array was not initialized.
     TransferLabel(filename);
   }
   std::vector<std::vector<Vertex>> adj_list;
@@ -92,6 +98,7 @@ Graph::Graph(const std::string &filename, bool is_query) {
       label_[id] = l;
       label_set.insert(l);
     } else if (type == 'e') {
+        //labeling by vertex, not by edge. I think this code discard edge label
       Vertex v1, v2;
       Label l;
       fin >> v1 >> v2 >> l;
@@ -102,6 +109,7 @@ Graph::Graph(const std::string &filename, bool is_query) {
       num_edges_ += 1;
     }
   }
+
 
   fin.close();
 
@@ -116,7 +124,10 @@ Graph::Graph(const std::string &filename, bool is_query) {
   start_offset_by_label_.resize(num_vertices_ * (max_label_ + 1));
 
   start_offset_[0] = 0;
+
   for (size_t i = 0; i < adj_list.size(); ++i) {
+      //initialize start_offset_ by start index where i's adj_vertex is saved
+      //vertex 0's adj_vertex id is saved at adj_array_[start_offset[id]]~adj_array[start_offset[id+1]]
     start_offset_[i + 1] = start_offset_[i] + adj_list[i].size();
   }
 
