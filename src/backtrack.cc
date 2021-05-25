@@ -4,6 +4,7 @@
  */
 
 #include "backtrack.h"
+#include "dag.h"
 using namespace std;
 
 
@@ -14,7 +15,7 @@ Backtrack::Backtrack(const Graph &d, const Graph &q, const CandidateSet &c): dat
   embedding = vector<Vertex>(q_size, -1);  
   embedding_size = 0;  
   pair<size_t, vector<Vertex>> init = make_pair(0, vector<Vertex>());
-  extendable = vector<pair<bool,vector<Vertex>>>(q_size, init);
+  extendable = vector<pair<size_t,vector<Vertex>>>(q_size, init);
 
 
   root = query.GetRoot();

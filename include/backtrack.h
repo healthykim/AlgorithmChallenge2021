@@ -31,7 +31,7 @@ class Backtrack {
  size_t q_size; /*# of vertices of query graph*/
 
  /*array of extendable vertices: <if extendable, array of extendable candidates>*/
- vector<pair<bool,vector<Vertex>>> extendable;
+ vector<pair<size_t,vector<Vertex>>> extendable;
 
  const Graph &data;
  const Graph &query;
