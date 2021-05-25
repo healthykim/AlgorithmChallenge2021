@@ -7,11 +7,16 @@
 #define GRAPH_H_
 
 #include "common.h"
+#include "candidate_set.h"
 
 class Graph {
  public:
   explicit Graph(const std::string& filename, bool is_query = false);
+  explicit Graph(const std::string& filename, const CandidateSet &candidateSet, bool is_query = false);
   ~Graph();
+  Vertex root;
+  std::vector<std::vector<Vertex>> dag_adj;
+  std::vector<std::vector<Vertex>> parents;
 
   inline int32_t GetGraphID() const;
 
@@ -193,5 +198,7 @@ inline bool Graph::IsNeighbor(Vertex u, Vertex v) const {
   return offset >= GetNeighborStartOffset(u, GetLabel(v)) &&
          offset < GetNeighborEndOffset(u, GetLabel(v)) && *it == v;
 }
+
+
 
 #endif  // GRAPH_H_
