@@ -3,11 +3,16 @@
  *
  */
 
+#include <queue>
+#include <algorithm>
 #include "graph.h"
 
 namespace {
 std::vector<Label> transferred_label;
 void TransferLabel(const std::string &filename) {
+    //initialize transferred_label array by order(tranferred_label[smallest label] <- 0)
+    //i don't know why TA did this job.
+    //possibility : given label value is too large
   std::ifstream fin(filename);
 
   if (!fin.is_open()) {
@@ -52,10 +57,13 @@ void TransferLabel(const std::string &filename) {
 }  // namespace
 
 Graph::Graph(const std::string &filename, bool is_query) {
-  if (!is_query) {
+
+    if (!is_query) {
+        //if !is_query, transferred_label array was not initialized.
     TransferLabel(filename);
-  }
-  std::vector<std::vector<Vertex>> adj_list;
+    }
+    std::vector<std::vector<Vertex>> adj_list;
+    dag_adj = std::vector<std::vector<Vertex>>();
 
   // Load Graph
   std::ifstream fin(filename);
@@ -92,6 +100,7 @@ Graph::Graph(const std::string &filename, bool is_query) {
       label_[id] = l;
       label_set.insert(l);
     } else if (type == 'e') {
+        //labeling by vertex, not by edge. I think this code discard edge label
       Vertex v1, v2;
       Label l;
       fin >> v1 >> v2 >> l;
@@ -102,6 +111,7 @@ Graph::Graph(const std::string &filename, bool is_query) {
       num_edges_ += 1;
     }
   }
+
 
   fin.close();
 
@@ -116,7 +126,10 @@ Graph::Graph(const std::string &filename, bool is_query) {
   start_offset_by_label_.resize(num_vertices_ * (max_label_ + 1));
 
   start_offset_[0] = 0;
+
   for (size_t i = 0; i < adj_list.size(); ++i) {
+      //initialize start_offset_ by start index where i's adj_vertex is saved
+      //vertex 0's adj_vertex id is saved at adj_array_[start_offset[id]]~adj_array[start_offset[id+1]]
     start_offset_[i + 1] = start_offset_[i] + adj_list[i].size();
   }
 
@@ -162,6 +175,158 @@ Graph::Graph(const std::string &filename, bool is_query) {
     std::copy(adj_list[i].begin(), adj_list[i].end(),
               adj_array_.begin() + start_offset_[i]);
   }
+}
+
+Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool is_query) {
+    if (!is_query) {
+        //if !is_query, transferred_label array was not initialized.
+        TransferLabel(filename);
+    }
+   // std::vector<std::vector<Vertex>> adj_list;
+    std::vector<std::pair<double, Vertex>> priority;
+
+    // Load Graph
+    std::ifstream fin(filename);
+    std::set<Label> label_set;
+
+    if (!fin.is_open()) {
+        std::cout << "Graph file " << filename << " not found!\n";
+        exit(EXIT_FAILURE);
+    }
+
+    char type;
+
+    fin >> type >> graph_id_ >> num_vertices_;
+
+    dag_adj.resize(num_vertices_);
+    parents.resize(num_vertices_);
+
+    start_offset_.resize(num_vertices_ + 1);
+    label_.resize(num_vertices_);
+
+    num_edges_ = 0;
+
+    // preprocessing
+    while (fin >> type) {
+        if (type == 'v') {
+            Vertex id;
+            Label l;
+            fin >> id >> l;
+
+            if (static_cast<size_t>(l) >= transferred_label.size())
+                l = -1;
+            else
+                l = transferred_label[l];
+
+            label_[id] = l;
+            label_set.insert(l);
+        } else if (type == 'e') {
+            //labeling by vertex, not by edge. I think this code discard edge label
+            Vertex v1, v2;
+            Label l;
+            fin >> v1 >> v2 >> l;
+
+            dag_adj[v1].push_back(v2);
+            dag_adj[v2].push_back(v1);
+
+            num_edges_ += 2;
+        }
+    }
+
+    int mark[num_vertices_];
+    for (Vertex v = 0; v < num_vertices_; v++) {
+        double p = (double) candidateSet.GetCandidateSize(v) / dag_adj[v].size();
+        priority.push_back(std::pair<double, Vertex>(p, v));
+        mark[v] = 0;
+    }
+
+     Vertex v = std::min_element(priority.begin(), priority.end())->second;
+     root = v;
+
+
+     std::stack<Vertex> s;
+     s.push(v);
+     mark[v] = 1;
+     while (s.size()!=0 && !dag_adj[v].empty()) {
+         v = s.top();
+         std::vector<Vertex> neighbor = dag_adj[v];
+         Vertex nn = neighbor.front();
+          if (mark[nn])
+              s.pop();
+          else {
+              dag_adj[nn].erase(std::remove_if(dag_adj[nn].begin(), dag_adj[nn].end(), [this, &mark, nn](Vertex x) {
+                  if(mark[x]){
+                      parents[nn].push_back(x);
+                  }
+                  return mark[x] == 1;
+              }), dag_adj[nn].end());
+              s.push(nn);
+              mark[nn] = 1;
+          }
+     }
+
+    fin.close();
+
+//    adj_array_.resize(num_edges_);
+//
+//    num_labels_ = label_set.size();
+//
+//    max_label_ = *std::max_element(label_set.begin(), label_set.end());
+//
+//    label_frequency_.resize(max_label_ + 1);
+//
+//    start_offset_by_label_.resize(num_vertices_ * (max_label_ + 1));
+//
+//    start_offset_[0] = 0;
+//
+//    for (size_t i = 0; i < adj_list.size(); ++i) {
+//        //initialize start_offset_ by start index where i's adj_vertex is saved
+//        //vertex 0's adj_vertex id is saved at adj_array_[start_offset[id]]~adj_array[start_offset[id+1]]
+//        start_offset_[i + 1] = start_offset_[i] + adj_list[i].size();
+//    }
+//
+//    for (size_t i = 0; i < adj_list.size(); ++i) {
+//        label_frequency_[GetLabel(i)] += 1;
+//
+//        auto &neighbors = adj_list[i];
+//
+//        if (neighbors.size() == 0) continue;
+//
+//        // sort neighbors by ascending order of label first, and descending order of
+//        // degree second
+//        std::sort(neighbors.begin(), neighbors.end(), [this](Vertex u, Vertex v) {
+//            if (GetLabel(u) != GetLabel(v))
+//                return GetLabel(u) < GetLabel(v);
+//            else if (GetDegree(u) != GetDegree(v))
+//                return GetDegree(u) > GetDegree(v);
+//            else
+//                return u < v;
+//        });
+//
+//        Vertex v = neighbors[0];
+//        Label l = GetLabel(v);
+//
+//        start_offset_by_label_[i * (max_label_ + 1) + l].first = start_offset_[i];
+//
+//        for (size_t j = 1; j < neighbors.size(); ++j) {
+//            v = neighbors[j];
+//            Label next_l = GetLabel(v);
+//
+//            if (l != next_l) {
+//                start_offset_by_label_[i * (max_label_ + 1) + l].second =
+//                        start_offset_[i] + j;
+//                start_offset_by_label_[i * (max_label_ + 1) + next_l].first =
+//                        start_offset_[i] + j;
+//                l = next_l;
+//            }
+//        }
+//
+//        start_offset_by_label_[i * (max_label_ + 1) + l].second =
+//                start_offset_[i + 1];
+//
+//        std::copy(adj_list[i].begin(), adj_list[i].end(),
+//                  adj_array_.begin() + start_offset_[i]);
+//    }
 }
 
 Graph::~Graph() {}
