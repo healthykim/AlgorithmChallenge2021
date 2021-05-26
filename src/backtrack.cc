@@ -70,7 +70,7 @@ void Backtrack::backtrack(Vertex curr){
 
           /*make min heap of the extendable vertices based on the # of extendable candidates*/
           for(size_t j=0; j<q_size; j++){
-            if(extendable[j].first==0) continue;
+            if(extendable[j].first==0||embedding[j]!=-1) continue;
             else pq.push(make_pair(extendable[j], j));
           }
                
@@ -114,7 +114,7 @@ void Backtrack::backtrack(Vertex curr){
           priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
 
           for(size_t j=0; j<q_size; j++){
-            if(extendable[j].first==0) continue;
+            if(embedding[j]!=-1||extendable[j].first==0) continue;
             else pq.push(make_pair(extendable[j], j));
           }
                

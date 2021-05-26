@@ -27,11 +27,15 @@ class Backtrack {
 
  size_t cnt; /*# of embedding got*/
 
- vector<Vertex> embedding; /*partial embedding, embedding(u) = v, u: vertex of query, v: vertex of data*/
+/*partial embedding, embedding[u] = v, u: vertex of query, v: vertex of data
+embedding[u] = -1 if mapping for u is not included yet*/
+ vector<Vertex> embedding; 
+
+
  size_t embedding_size; /*# of vertices in partial embedding*/
  size_t q_size; /*# of vertices of query graph*/
 
- /*array of extendable vertices: <if extendable, array of extendable candidates>*/
+ /*array of extendable vertices: <size of extendable candidates(0 if not extendable), array of extendable candidates>*/
  vector<pair<size_t,vector<Vertex>>> extendable;
 
  const Graph &data;
