@@ -4,7 +4,6 @@
  */
 
 #include "backtrack.h"
-#include "dag.h"
 using namespace std;
 
 
