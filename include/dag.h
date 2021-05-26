@@ -36,7 +36,7 @@ inline size_t Dag::GetChildSize(Vertex v) const {
 }
 
 inline size_t Dag::GetParentSize(Vertex v) const {
-    return dag_adj[v].size();
+    return parents[v].size();
 }
 
 
