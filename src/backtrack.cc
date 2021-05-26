@@ -120,7 +120,6 @@ void Backtrack::backtrack(Vertex curr){
           }
           embedding_size--;
           embedding[curr] = -1;
-
         }       
       }
 
