@@ -57,10 +57,6 @@ void Backtrack::backtrack(Vertex curr){
           printembedding();
           if(cnt>100000) return;
 
-          /*in order to search other candidate for same vertex*/
-          embedding_size--;
-          embedding[curr] = -1;
-          continue;
         }
         else{
           /*Candidate-size order for bactracking*/
@@ -84,12 +80,12 @@ void Backtrack::backtrack(Vertex curr){
             pq.pop();
             if(cnt>100000) return;
           }
-
-          /*search for candidate curr_cs is done*/
-          /*in order to search other candidates for vertex curr*/
-          embedding_size--;
-          embedding[curr] = -1;
+          
         }       
+        /*in order to search other candidate for same vertex*/
+        embedding_size--;
+        embedding[curr] = -1;
+      
              
       }
 
@@ -109,11 +105,6 @@ void Backtrack::backtrack(Vertex curr){
           cnt++;
           printembedding();
           if(cnt>100000) return;
-
-          /*in order to search other candidate for same vertex*/
-          embedding_size--;
-          embedding[curr] = -1;
-          continue;
         }
         else{
           /*same as above*/
@@ -132,9 +123,11 @@ void Backtrack::backtrack(Vertex curr){
             pq.pop();
             if(cnt>100000) return;
           }
-          embedding_size--;
-          embedding[curr] = -1;
+          
         }       
+        /*in order to search other candidate for same vertex*/
+        embedding_size--;
+        embedding[curr] = -1;
       }
 
       /*change extendable status before returning to previous stage*/
@@ -145,7 +138,6 @@ void Backtrack::backtrack(Vertex curr){
 
 }
     
-
 
 /*check if the vertex of cs is an appropriate candidate of mapping for curr*/
 bool Backtrack::check_candidate(Vertex curr, Vertex curr_cs, const vector<Vertex> &curr_parent){   
