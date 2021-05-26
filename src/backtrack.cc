@@ -64,20 +64,21 @@ void Backtrack::backtrack(Vertex curr){
           /*Candidate-size order*/
           update_extendable(curr);
 
-          vector<pair<pair<size_t, vector<Vertex>>, Vertex>> real_extend; 
+          typedef pair<pair<size_t, vector<Vertex>>, Vertex> extendable_pair;
+          priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
 
           for(size_t j=0; j<q_size; j++){
             if(extendable[j].first==0) continue;
-            else real_extend.push_back(make_pair(extendable[j], j));
+            else pq.push(make_pair(extendable[j], j));
           }
-
-          make_heap(real_extend.begin(), real_extend.end());
-          for(int j=real_extend.size()-1; j>=0; j--){
-              backtrack(real_extend[j].second);
+               
+          while(!pq.empty()){
+            backtrack(pq.top().second);
+            pq.pop();
             if(cnt>100000) return;
           }
+          embedding_size--;
           embedding[curr] = -1;
-          embedding_size--;  
         }       
              
       }
