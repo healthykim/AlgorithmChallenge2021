@@ -23,8 +23,6 @@ Backtrack::Backtrack(const Graph &d, const Dag &q, const CandidateSet &c): data(
 Backtrack::~Backtrack() {}
 
 void Backtrack::PrintAllMatches() {
-
-  std::cout << "t " << q_size << "\n";
   
   // implement your code here.
   backtrack(root); 

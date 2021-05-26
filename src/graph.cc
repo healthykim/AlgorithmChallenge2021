@@ -239,19 +239,17 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
         priority.push_back(std::pair<double, Vertex>(p, v));
         mark[v] = 0;
     }
-    std::sort(priority.begin(), priority.end());
 
-     Vertex v = priority[0].second;
+     Vertex v = std::min_element(priority.begin(), priority.end())->second;
      root = v;
-     //std::cout<<root<<std::endl;
-     Vertex n = v;
+
 
      std::stack<Vertex> s;
-     s.push(n);
+     s.push(v);
      mark[v] = 1;
      while (s.size()!=0 && !dag_adj[v].empty()) {
-         n = s.top();
-         std::vector<Vertex> neighbor = dag_adj[n];
+         v = s.top();
+         std::vector<Vertex> neighbor = dag_adj[v];
          Vertex nn = neighbor.front();
           if (mark[nn])
               s.pop();
