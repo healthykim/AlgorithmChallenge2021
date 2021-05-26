@@ -76,9 +76,10 @@ void Backtrack::backtrack(Vertex curr){
               backtrack(real_extend[j].second);
             if(cnt>100000) return;
           }
+          embedding[curr] = -1;
+          embedding_size--;  
         }       
-        embedding[curr] = -1;
-        embedding_size--;       
+             
       }
 
       return;
@@ -125,7 +126,6 @@ void Backtrack::backtrack(Vertex curr){
 
       /*change extendable status before returning to previous stage*/
       update_extendable(curr);
-
       return;
   }  
 
