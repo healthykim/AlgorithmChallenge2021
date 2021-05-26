@@ -25,6 +25,8 @@ class Backtrack {
  void printembedding();
  void update_extendable(Vertex curr);
 
+ bool check(); /*check if embedding is correct*/
+
  size_t cnt; /*# of embedding got*/
 
 /*partial embedding, embedding[u] = v, u: vertex of query, v: vertex of data
