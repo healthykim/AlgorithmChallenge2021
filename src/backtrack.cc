@@ -44,7 +44,7 @@ void Backtrack::backtrack(Vertex curr){
       /*map curr vertex to candidate space*/
       for(size_t i =0; i<curr_cs_size; i++){
         Vertex curr_cs = cs.GetCandidate(curr, i); /*candidate for mapping*/
- 
+
         /*As checking the condition is done, map curr with curr_cs*/
         embedding[curr] = curr_cs;
         embedding_size++;
@@ -71,8 +71,8 @@ void Backtrack::backtrack(Vertex curr){
           }
 
           make_heap(real_extend.begin(), real_extend.end());
-          for(vector<pair<pair<size_t, vector<Vertex>>, Vertex>>::size_type j=real_extend.size()-1; j>=0; j--){
-            backtrack(real_extend[j].second);
+          for(int j=real_extend.size()-1; j>=0; j--){
+              backtrack(real_extend[j].second);
             if(cnt>100000) return;
           }
         }       
@@ -109,7 +109,7 @@ void Backtrack::backtrack(Vertex curr){
           }
 
           make_heap(real_extend.begin(), real_extend.end());
-          for(vector<pair<pair<size_t, vector<Vertex>>, Vertex>>::size_type j=real_extend.size()-1; j>=0; j--){
+          for(int j=real_extend.size()-1; j>=0; j--){
             backtrack(real_extend[j].second);
             if(cnt>100000) return;
           }
@@ -159,7 +159,6 @@ void Backtrack::update_extendable(Vertex curr){
       extendable[child] = make_pair(0, vector<Vertex>());
     }
     else{
-      
      vector<Vertex> parent_child;
      size_t parent_child_size = query.GetParentSize(child);
      bool if_extendable = true;
@@ -174,18 +173,15 @@ void Backtrack::update_extendable(Vertex curr){
      }
 
      if(if_extendable){ /*if extendable, find extendable candidates*/
-
         vector<Vertex> candidates;
 
         size_t child_cs_size = cs.GetCandidateSize(child);
         Vertex child_cs;
 
         for(size_t i =0; i<child_cs_size; i++){
-          child_cs = cs.GetCandidate(curr, i); /*candidate for mapping*/
-      
-          if(check_candidate(child, child_cs, parent_child)) candidates.push_back(child_cs); 
+          child_cs = cs.GetCandidate(child, i); /*candidate for mapping*/
+          if(check_candidate(child, child_cs, parent_child)) candidates.push_back(child_cs);
         }
-
         extendable[child] = make_pair(candidates.size(), candidates);
 
      }
