@@ -247,19 +247,20 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
      std::stack<Vertex> s;
      s.push(v);
      mark[v] = 1;
-     while (s.size()!=0 && !dag_adj[v].empty()) {
+     while (!s.empty() && !dag_adj[v].empty()) {
          v = s.top();
          std::vector<Vertex> neighbor = dag_adj[v];
          Vertex nn = neighbor.front();
           if (mark[nn])
               s.pop();
           else {
-              dag_adj[nn].erase(std::remove_if(dag_adj[nn].begin(), dag_adj[nn].end(), [this, &mark, nn](Vertex x) {
-                  if(mark[x]){
-                      parents[nn].push_back(x);
-                  }
-                  return mark[x] == 1;
-              }), dag_adj[nn].end());
+              std::vector<Vertex> new_adj;
+              for(int i =0; i<dag_adj[nn].size(); i++)
+              {
+                  if(!mark[dag_adj[nn][i]])
+                      new_adj.push_back(dag_adj[nn][i]);
+              }
+              dag_adj[nn] = new_adj;
               s.push(nn);
               mark[nn] = 1;
           }
