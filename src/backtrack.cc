@@ -8,7 +8,7 @@
 using namespace std;
 
 
-Backtrack::Backtrack(const Graph &d, const Graph &q, const CandidateSet &c): data(d), query(q), cs(c){
+Backtrack::Backtrack(const Graph &d, const Dag &q, const CandidateSet &c): data(d), query(q), cs(c){
   
   cnt = 0;
   q_size = query.GetNumVertices();
@@ -39,12 +39,9 @@ void  Backtrack::printembedding(){
 }
 
 void Backtrack::backtrack(Vertex curr){
-  size_t curr_cs_size; /*candidate space size for curr vertex*/  
-  vector<Vertex> curr_parent;
-  
+  size_t curr_cs_size; /*candidate space size for curr vertex*/   
 
   curr_cs_size = cs.GetCandidateSize(curr);
-  curr_parent = query.GetParent(curr); /*parent of curr vertex in query graph*/
 
   if(curr==root){
       /*map curr vertex to candidate space*/
@@ -156,17 +153,23 @@ bool Backtrack::check_candidate(Vertex curr, Vertex curr_cs, const vector<Vertex
 }
 
 void Backtrack::update_extendable(Vertex curr){
-   vector<Vertex> curr_child = query.GetChild(curr);
+   
+   size_t curr_child_size = query.GetChildSize(curr);
 
-   for(Vertex child: curr_child){ /*check if child is extendable vertexd*/
+   for(size_t i=0; i<curr_child_size; i++){ /*check if child is extendable vertexd*/
+    Vertex child = query.GetChild(curr, i);
     if(embedding[curr]==-1){
       extendable[child] = make_pair(0, vector<Vertex>());
     }
     else{
-      vector<Vertex> parent_child = query.GetParent(child);
+      
+     vector<Vertex> parent_child;
+     size_t parent_child_size = query.GetParentSize(child);
      bool if_extendable = true;
 
-     for(Vertex parent: parent_child){
+     for(size_t j=0; j<parent_child_size; j++){
+       Vertex parent = query.GetParent(child, j);
+       parent_child.push_back(parent);
        if(embedding[parent]==-1){
         if_extendable = false;
         break;

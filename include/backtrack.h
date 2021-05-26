@@ -9,20 +9,21 @@
 #include "candidate_set.h"
 #include "common.h"
 #include "graph.h"
+#include "dag.h"
 using namespace std;
 
 class Backtrack {
  public:
-  Backtrack(const Graph &d, const Graph &q, const CandidateSet &c);
+  Backtrack(const Graph &d, const Dag &q, const CandidateSet &c);
   ~Backtrack();
 
   void PrintAllMatches();
 
  private:
- void Backtrack::backtrack(Vertex curr);
- bool Backtrack::check_candidate(Vertex curr, Vertex curr_cs, const vector<Vertex> &curr_parent);
- void Backtrack::printembedding();
- void Backtrack::update_extendable(Vertex curr);
+ void backtrack(Vertex curr);
+ bool check_candidate(Vertex curr, Vertex curr_cs, const vector<Vertex> &curr_parent);
+ void printembedding();
+ void update_extendable(Vertex curr);
 
  size_t cnt; /*# of embedding got*/
 
@@ -34,7 +35,7 @@ class Backtrack {
  vector<pair<size_t,vector<Vertex>>> extendable;
 
  const Graph &data;
- const Graph &query;
+ const Dag &query;
  const CandidateSet &cs;
 
  Vertex root; /*root of query DAG*/
