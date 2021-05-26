@@ -247,24 +247,55 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
      std::stack<Vertex> s;
      s.push(v);
      mark[v] = 1;
-     while (!s.empty() && !dag_adj[v].empty()) {
+     while (!s.empty()) {
          v = s.top();
+//         std::cout<<"for " << v << std::endl;
          std::vector<Vertex> neighbor = dag_adj[v];
+         if(neighbor.empty()) {
+             s.pop();
+             continue;
+         }
          Vertex nn = neighbor.front();
+         for (int i = 1; i < neighbor.size(); i++) {
+             if ((priority[nn] > priority[i]) && !mark[i])
+                 nn = neighbor[i];
+             else if (mark[nn]) {
+                 nn = neighbor[i];
+             }
+         }
           if (mark[nn])
               s.pop();
           else {
+//              std::cout << nn << std::endl;
               std::vector<Vertex> new_adj;
               for(int i =0; i<dag_adj[nn].size(); i++)
               {
-                  if(!mark[dag_adj[nn][i]])
+                  if(!mark[dag_adj[nn][i]]) {
                       new_adj.push_back(dag_adj[nn][i]);
+                  }
+                  else
+                      parents[nn].push_back(dag_adj[nn][i]);
               }
               dag_adj[nn] = new_adj;
               s.push(nn);
               mark[nn] = 1;
           }
      }
+///FOR DEBUGGING
+//     for(int i=0; i<parents.size(); i++){
+//         std::cout<<"parent of "<< i <<std::endl;
+//         for(int j=0; j<parents[i].size(); j++){
+//             std::cout<< parents[i][j] <<" ";
+//         }
+//         std::cout<<std::endl;
+//     }
+//    for(int i=0; i<dag_adj.size(); i++){
+//        std::cout<<"child of "<< i <<std::endl;
+//        for(int j=0; j<dag_adj[i].size(); j++){
+//            std::cout<< dag_adj[i][j] <<" ";
+//        }
+//        std::cout<<std::endl;
+//    }
 
     fin.close();
 
