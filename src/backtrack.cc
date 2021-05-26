@@ -77,6 +77,8 @@ void Backtrack::backtrack(Vertex curr){
             if(cnt>100000) return;
           }
         }       
+        embedding[curr] = -1;
+        embedding_size--;       
       }
 
       return;
@@ -115,12 +117,13 @@ void Backtrack::backtrack(Vertex curr){
             pq.pop();
             if(cnt>100000) return;
           }
+          embedding_size--;
+          embedding[curr] = -1;
+
         }       
       }
 
-      /*change status before returning to previous stage*/
-      embedding_size--;
-      embedding[curr] = -1;
+      /*change extendable status before returning to previous stage*/
       update_extendable(curr);
 
       return;
