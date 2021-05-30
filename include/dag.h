@@ -16,6 +16,7 @@ public:
     inline size_t GetParent(Vertex v, size_t i) const;
     inline size_t GetChild(Vertex v, size_t) const;
     inline Vertex GetRoot() const;
+    inline virtual bool IsNeighbor(Vertex u, Vertex v) const;
     ~Dag();
 };
 
@@ -39,5 +40,10 @@ inline size_t Dag::GetParentSize(Vertex v) const {
     return parents[v].size();
 }
 
+inline bool Dag::IsNeighbor(Vertex u, Vertex v) const {
+    auto it = find(parents[u].begin(), parents[u].end(), v);
+    auto it2 = find(parents[v].begin(), parents[v].end(), u);
+    return it!=parents[u].end()||it2!=parents[v].end();
+}
 
 #endif //DAG_H

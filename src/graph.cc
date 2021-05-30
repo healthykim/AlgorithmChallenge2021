@@ -249,7 +249,6 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
      mark[v] = 1;
      while (!s.empty()) {
          v = s.top();
-//         std::cout<<"for " << v << std::endl;
          std::vector<Vertex> neighbor = dag_adj[v];
          if(neighbor.empty()) {
              s.pop();
@@ -266,99 +265,86 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
           if (mark[nn])
               s.pop();
           else {
-//              std::cout << nn << std::endl;
               std::vector<Vertex> new_adj;
               for(int i =0; i<dag_adj[nn].size(); i++)
               {
                   if(!mark[dag_adj[nn][i]]) {
                       new_adj.push_back(dag_adj[nn][i]);
                   }
-                  else
+                  else {
                       parents[nn].push_back(dag_adj[nn][i]);
+                      num_edges_--;
+                  }
               }
               dag_adj[nn] = new_adj;
               s.push(nn);
               mark[nn] = 1;
           }
      }
-///FOR DEBUGGING
-//     for(int i=0; i<parents.size(); i++){
-//         std::cout<<"parent of "<< i <<std::endl;
-//         for(int j=0; j<parents[i].size(); j++){
-//             std::cout<< parents[i][j] <<" ";
-//         }
-//         std::cout<<std::endl;
-//     }
-//    for(int i=0; i<dag_adj.size(); i++){
-//        std::cout<<"child of "<< i <<std::endl;
-//        for(int j=0; j<dag_adj[i].size(); j++){
-//            std::cout<< dag_adj[i][j] <<" ";
-//        }
-//        std::cout<<std::endl;
-//    }
+     printf("dag converted\n");
 
     fin.close();
 
-//    adj_array_.resize(num_edges_);
-//
-//    num_labels_ = label_set.size();
-//
-//    max_label_ = *std::max_element(label_set.begin(), label_set.end());
-//
-//    label_frequency_.resize(max_label_ + 1);
-//
-//    start_offset_by_label_.resize(num_vertices_ * (max_label_ + 1));
-//
-//    start_offset_[0] = 0;
-//
-//    for (size_t i = 0; i < adj_list.size(); ++i) {
-//        //initialize start_offset_ by start index where i's adj_vertex is saved
-//        //vertex 0's adj_vertex id is saved at adj_array_[start_offset[id]]~adj_array[start_offset[id+1]]
-//        start_offset_[i + 1] = start_offset_[i] + adj_list[i].size();
-//    }
-//
-//    for (size_t i = 0; i < adj_list.size(); ++i) {
-//        label_frequency_[GetLabel(i)] += 1;
-//
-//        auto &neighbors = adj_list[i];
-//
-//        if (neighbors.size() == 0) continue;
-//
-//        // sort neighbors by ascending order of label first, and descending order of
-//        // degree second
-//        std::sort(neighbors.begin(), neighbors.end(), [this](Vertex u, Vertex v) {
-//            if (GetLabel(u) != GetLabel(v))
-//                return GetLabel(u) < GetLabel(v);
-//            else if (GetDegree(u) != GetDegree(v))
-//                return GetDegree(u) > GetDegree(v);
-//            else
-//                return u < v;
-//        });
-//
-//        Vertex v = neighbors[0];
-//        Label l = GetLabel(v);
-//
-//        start_offset_by_label_[i * (max_label_ + 1) + l].first = start_offset_[i];
-//
-//        for (size_t j = 1; j < neighbors.size(); ++j) {
-//            v = neighbors[j];
-//            Label next_l = GetLabel(v);
-//
-//            if (l != next_l) {
-//                start_offset_by_label_[i * (max_label_ + 1) + l].second =
-//                        start_offset_[i] + j;
-//                start_offset_by_label_[i * (max_label_ + 1) + next_l].first =
-//                        start_offset_[i] + j;
-//                l = next_l;
-//            }
-//        }
-//
-//        start_offset_by_label_[i * (max_label_ + 1) + l].second =
-//                start_offset_[i + 1];
-//
-//        std::copy(adj_list[i].begin(), adj_list[i].end(),
-//                  adj_array_.begin() + start_offset_[i]);
-//    }
+    adj_array_.resize(num_edges_);
+
+    num_labels_ = label_set.size();
+
+    max_label_ = *std::max_element(label_set.begin(), label_set.end());
+
+    label_frequency_.resize(max_label_ + 1);
+
+    start_offset_by_label_.resize(num_vertices_ * (max_label_ + 1));
+
+    start_offset_[0] = 0;
+
+    for (size_t i = 0; i < dag_adj.size(); ++i) {
+        //initialize start_offset_ by start index where i's adj_vertex is saved
+        //vertex 0's adj_vertex id is saved at adj_array_[start_offset[id]]~adj_array[start_offset[id+1]]
+        start_offset_[i + 1] = start_offset_[i] + dag_adj[i].size();
+    }
+
+    for (size_t i = 0; i < dag_adj.size(); ++i) {
+        label_frequency_[GetLabel(i)] += 1;
+
+        auto &neighbors = dag_adj[i];
+
+        if (neighbors.size() == 0) continue;
+
+        // sort neighbors by ascending order of label first, and descending order of
+        // degree second
+        std::sort(neighbors.begin(), neighbors.end(), [this](Vertex u, Vertex v) {
+            if (GetLabel(u) != GetLabel(v))
+                return GetLabel(u) < GetLabel(v);
+            else if (GetDegree(u) != GetDegree(v))
+                return GetDegree(u) > GetDegree(v);
+            else
+                return u < v;
+        });
+
+        Vertex v = neighbors[0];
+        Label l = GetLabel(v);
+
+        start_offset_by_label_[i * (max_label_ + 1) + l].first = start_offset_[i];
+
+        for (size_t j = 1; j < neighbors.size(); ++j) {
+            v = neighbors[j];
+            Label next_l = GetLabel(v);
+
+            if (l != next_l) {
+                start_offset_by_label_[i * (max_label_ + 1) + l].second =
+                        start_offset_[i] + j;
+                start_offset_by_label_[i * (max_label_ + 1) + next_l].first =
+                        start_offset_[i] + j;
+                l = next_l;
+            }
+        }
+
+        start_offset_by_label_[i * (max_label_ + 1) + l].second =
+                start_offset_[i + 1];
+
+        std::copy(dag_adj[i].begin(), dag_adj[i].end(),
+                  adj_array_.begin() + start_offset_[i]);
+    }
 }
 
 Graph::~Graph() {}

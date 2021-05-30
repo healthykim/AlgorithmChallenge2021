@@ -38,7 +38,7 @@ class Graph {
   inline Label GetLabel(Vertex v) const;
   inline Vertex GetNeighbor(size_t offset) const;
 
-  inline bool IsNeighbor(Vertex u, Vertex v) const;
+  inline virtual bool IsNeighbor(Vertex u, Vertex v) const;
 
  private:
   int32_t graph_id_;

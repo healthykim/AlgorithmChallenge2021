@@ -5,6 +5,7 @@
 
 #include "backtrack.h"
 #include <queue>
+#include <stdio.h>
 using namespace std;
 
 
@@ -23,22 +24,43 @@ Backtrack::Backtrack(const Graph &d, const Dag &q, const CandidateSet &c): data(
 Backtrack::~Backtrack() {}
 
 void Backtrack::PrintAllMatches() {
-  
-  cout << "t " << q_size << "\n";
+  printf("t %lu\n", query.GetNumVertices());
   // implement your code here.
   backtrack(root); 
 }
 
 void  Backtrack::printembedding(){
-  cout<<"a ";
+  printf("a ");
+
+  /*for checking*/
+  //if(!check()) printf("wrong embedding: ");
+
   for(size_t i=0; i<q_size; i++){
-    cout<<embedding[i]<<" ";
+    printf("%d ", embedding[i]);
   }
-  cout<<"\n";
+  printf("\n");
+}
+
+bool Backtrack::check(){
+  for(size_t i=0; i<q_size; i++){
+    /*check condition 2: same label*/
+    if(query.GetLabel(i)!=data.GetLabel(embedding[i])) return false;
+
+    for(size_t j=i+1; j<q_size; j++){
+      /*check condition 1: injectivity*/
+      if(embedding[i]==embedding[j]) return false;
+
+      /*check conditio 3: edges*/
+      if(query.IsNeighbor(i,j)) if(!data.IsNeighbor(embedding[i], embedding[j])) return false;
+    }
+
+
+  }
+  return true;
 }
 
 void Backtrack::backtrack(Vertex curr){
-  size_t curr_cs_size; /*candidate space size for curr vertex*/   
+  size_t curr_cs_size; /*candidate space size for curr vertex*/
 
   curr_cs_size = cs.GetCandidateSize(curr);
 
@@ -55,7 +77,7 @@ void Backtrack::backtrack(Vertex curr){
         if(embedding_size==q_size){ /*if embedding is found*/
           cnt++;
           printembedding();
-          if(cnt>100000) return;
+          if(cnt>=100000) return;
 
         }
         else{
@@ -70,7 +92,7 @@ void Backtrack::backtrack(Vertex curr){
 
           /*make min heap of the extendable vertices based on the # of extendable candidates*/
           for(size_t j=0; j<q_size; j++){
-            if(extendable[j].first==0) continue;
+            if(extendable[j].first==0||embedding[j]!=-1) continue;
             else pq.push(make_pair(extendable[j], j));
           }
                
@@ -78,7 +100,7 @@ void Backtrack::backtrack(Vertex curr){
           while(!pq.empty()){
             backtrack(pq.top().second);
             pq.pop();
-            if(cnt>100000) return;
+            if(cnt>=100000) return;
           }
           
         }       
@@ -104,7 +126,7 @@ void Backtrack::backtrack(Vertex curr){
         if(embedding_size==q_size){ /*if embedding is found*/
           cnt++;
           printembedding();
-          if(cnt>100000) return;
+          if(cnt>=100000) return;
         }
         else{
           /*same as above*/
@@ -114,14 +136,14 @@ void Backtrack::backtrack(Vertex curr){
           priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
 
           for(size_t j=0; j<q_size; j++){
-            if(extendable[j].first==0) continue;
+            if(embedding[j]!=-1||extendable[j].first==0) continue;
             else pq.push(make_pair(extendable[j], j));
           }
                
           while(!pq.empty()){
             backtrack(pq.top().second);
             pq.pop();
-            if(cnt>100000) return;
+            if(cnt>=100000) return;
           }
           
         }       
