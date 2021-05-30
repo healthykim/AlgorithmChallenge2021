@@ -53,7 +53,6 @@ bool Backtrack::check(){
       /*check conditio 3: edges*/
       if(query.IsNeighbor(i,j)) if(!data.IsNeighbor(embedding[i], embedding[j])) return false;
     }
-
   }
   return true;
 }
