@@ -12,8 +12,6 @@
 #include "dag.h"
 using namespace std;
 
-typedef pair<pair<size_t, vector<Vertex>>, Vertex> extendable_pair;
-
 class Backtrack {
  public:
   Backtrack(const Graph &d, const Dag &q, const CandidateSet &c);
@@ -26,6 +24,7 @@ class Backtrack {
  bool check_candidate(Vertex curr, Vertex curr_cs, const vector<Vertex> &curr_parent);
  void printembedding();
  void update_extendable(Vertex curr);
+ bool check_replica();
 
  int check(); /*check if embedding is correct*/
 
@@ -34,7 +33,7 @@ class Backtrack {
 /*partial embedding, embedding[u] = v, u: vertex of query, v: vertex of data
 embedding[u] = -1 if mapping for u is not included yet*/
  vector<Vertex> embedding; 
-
+ vector<vector<Vertex>> embedding_list;
 
  size_t embedding_size; /*# of vertices in partial embedding*/
  size_t q_size; /*# of vertices of query graph*/

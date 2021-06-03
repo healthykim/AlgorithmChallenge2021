@@ -18,6 +18,7 @@ Backtrack::Backtrack(const Graph &d, const Dag &q, const CandidateSet &c): data(
   pair<size_t, vector<Vertex>> init = make_pair(0, vector<Vertex>());
   extendable = vector<pair<size_t,vector<Vertex>>>(q_size, init);
 
+  embedding_list = vector<vector<Vertex>>();
 
   root = query.GetRoot();
 }
@@ -27,19 +28,51 @@ void Backtrack::PrintAllMatches() {
   printf("t %lu\n", query.GetNumVertices());
   // implement your code here.
   backtrack(root); 
+  
 }
 
 void  Backtrack::printembedding(){
  
   /*for checking*/
-  //if(check()!=0) printf("wrong embedding: %d    ", check());
-
+  //if(check()!=0) printf("wrong embedding: %d    ", check());  
   printf("a ");
 
   for(size_t i=0; i<q_size; i++){
     printf("%d ", embedding[i]);
-  }
+  }  
   printf("\n");
+  
+  /*for checking repetition*/
+  /*if(check_replica()){
+    printf("a ");
+
+    for(size_t i=0; i<q_size; i++){
+     printf("%d ", embedding[i]);
+    }  
+    printf("\n");
+
+    vector<Vertex> curr_embedding(embedding);
+    embedding_list.push_back(curr_embedding);
+  }
+  else printf("repeated\n");
+  */
+
+}
+
+bool Backtrack::check_replica(){  
+
+  for(vector<Vertex> past_embedding: embedding_list){
+      size_t same_cnt = 0;
+      for(size_t i=0; i<q_size; i++){
+        if(past_embedding[i]==embedding[i]) same_cnt++;
+      }
+
+      if(same_cnt==q_size) return false;
+  }
+
+  return true;
+
+
 }
 
 int Backtrack::check(){
@@ -54,8 +87,6 @@ int Backtrack::check(){
       /*check condition 3: edges*/
       if(query.IsNeighbor(i,j)) if(!data.IsNeighbor(embedding[i], embedding[j])) return 3;
     }
- 
-
   }
   return 0;
 }
@@ -88,27 +119,11 @@ void Backtrack::backtrack(Vertex curr){
           /*extendable candidates are also checked in this function*/
           update_extendable(curr);
 
-          
-          //priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
-
-          /*make min heap of the extendable vertices based on the # of extendable candidates*/
-          /*for(size_t j=0; j<q_size; j++){
-            if(extendable[j].first==0||embedding[j]!=-1) continue;
-            else pq.push(make_pair(extendable[j], j));
-          }
-          */
-          /*visiting each of them in candidate size order*/
-          /*
-          while(!pq.empty()){
-            backtrack(pq.top().second);
-            pq.pop();
-            if(cnt>=100000) return;
-          }
-          */
-
           size_t min= SIZE_MAX;
           int min_index=-1;
 
+          /*choose next vertex for backtracking among extendable vertices, 
+          based on candidate size order*/
           for(size_t j=0; j<q_size; j++){
             if(embedding[j]!=-1||extendable[j].first==0) continue;
             else if(extendable[j].first<min){
@@ -118,7 +133,7 @@ void Backtrack::backtrack(Vertex curr){
           }
 
           if(min_index!=-1) backtrack(min_index);
-          
+          if(cnt>=100000) return;
         }       
         /*in order to search other candidate for same vertex*/
         embedding_size--;
@@ -150,23 +165,11 @@ void Backtrack::backtrack(Vertex curr){
           /*same as above*/
           update_extendable(curr);
 
-          //priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
-          /*
-          for(size_t j=0; j<q_size; j++){
-            if(embedding[j]!=-1||extendable[j].first==0) continue;
-            else pq.push(make_pair(extendable[j], j));
-          }
-               
-          while(!pq.empty()){
-            backtrack(pq.top().second);
-            pq.pop();
-            if(cnt>=100000) return;
-          }
-          */
 
           size_t min= SIZE_MAX;
           int min_index=-1;
 
+          /*check for extendable candidates, as they can be already in embedding*/
           for(size_t j=0; j<q_size; j++){
             if(embedding[j]!=-1||extendable[j].first==0) continue;
             else{ 
@@ -183,6 +186,7 @@ void Backtrack::backtrack(Vertex curr){
           }
 
           if(min_index!=-1) backtrack(min_index);
+          if(cnt>=100000) return;
         }       
         /*in order to search other candidate for same vertex*/
         embedding_size--;
@@ -193,8 +197,7 @@ void Backtrack::backtrack(Vertex curr){
       update_extendable(curr);
       return;
   }  
-
-
+  
 }
     
 
