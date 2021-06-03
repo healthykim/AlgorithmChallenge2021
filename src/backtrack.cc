@@ -30,10 +30,11 @@ void Backtrack::PrintAllMatches() {
 }
 
 void  Backtrack::printembedding(){
-  printf("a ");
-
+ 
   /*for checking*/
-  //if(!check()) printf("wrong embedding: ");
+  //if(check()!=0) printf("wrong embedding: %d    ", check());
+
+  printf("a ");
 
   for(size_t i=0; i<q_size; i++){
     printf("%d ", embedding[i]);
@@ -41,22 +42,22 @@ void  Backtrack::printembedding(){
   printf("\n");
 }
 
-bool Backtrack::check(){
+int Backtrack::check(){
   for(size_t i=0; i<q_size; i++){
     /*check condition 2: same label*/
-    if(query.GetLabel(i)!=data.GetLabel(embedding[i])) return false;
+    if(query.GetLabel(i)!=data.GetLabel(embedding[i])) return 2;
 
     for(size_t j=i+1; j<q_size; j++){
       /*check condition 1: injectivity*/
-      if(embedding[i]==embedding[j]) return false;
+      if(embedding[i]==embedding[j]) return embedding[i];
 
-      /*check conditio 3: edges*/
-      if(query.IsNeighbor(i,j)) if(!data.IsNeighbor(embedding[i], embedding[j])) return false;
+      /*check condition 3: edges*/
+      if(query.IsNeighbor(i,j)) if(!data.IsNeighbor(embedding[i], embedding[j])) return 3;
     }
  
 
   }
-  return true;
+  return 0;
 }
 
 void Backtrack::backtrack(Vertex curr){
@@ -87,21 +88,36 @@ void Backtrack::backtrack(Vertex curr){
           /*extendable candidates are also checked in this function*/
           update_extendable(curr);
 
-          typedef pair<pair<size_t, vector<Vertex>>, Vertex> extendable_pair;
-          priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
+          
+          //priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
 
           /*make min heap of the extendable vertices based on the # of extendable candidates*/
-          for(size_t j=0; j<q_size; j++){
+          /*for(size_t j=0; j<q_size; j++){
             if(extendable[j].first==0||embedding[j]!=-1) continue;
             else pq.push(make_pair(extendable[j], j));
           }
-               
+          */
           /*visiting each of them in candidate size order*/
+          /*
           while(!pq.empty()){
             backtrack(pq.top().second);
             pq.pop();
             if(cnt>=100000) return;
           }
+          */
+
+          size_t min= SIZE_MAX;
+          int min_index=-1;
+
+          for(size_t j=0; j<q_size; j++){
+            if(embedding[j]!=-1||extendable[j].first==0) continue;
+            else if(extendable[j].first<min){
+                min = extendable[j].first;
+                min_index = j;
+              }
+          }
+
+          if(min_index!=-1) backtrack(min_index);
           
         }       
         /*in order to search other candidate for same vertex*/
@@ -120,7 +136,9 @@ void Backtrack::backtrack(Vertex curr){
        so we can freely add every vertices in extendabe[curr].second to embedding*/
       for(Vertex curr_cs: curr_cs_candidate){
        
-        embedding[curr] = curr_cs; /*map and add to partial embeddign*/
+        if(embedding.end()!=find(embedding.begin(), embedding.end(), curr_cs)) continue;
+
+        embedding[curr] = curr_cs; /*map and add to partial embedding*/
         embedding_size++;
 
         if(embedding_size==q_size){ /*if embedding is found*/
@@ -132,9 +150,8 @@ void Backtrack::backtrack(Vertex curr){
           /*same as above*/
           update_extendable(curr);
 
-          typedef pair<pair<size_t, vector<Vertex>>, Vertex> extendable_pair;
-          priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
-
+          //priority_queue<extendable_pair, vector<extendable_pair>, greater<extendable_pair>> pq;
+          /*
           for(size_t j=0; j<q_size; j++){
             if(embedding[j]!=-1||extendable[j].first==0) continue;
             else pq.push(make_pair(extendable[j], j));
@@ -145,7 +162,27 @@ void Backtrack::backtrack(Vertex curr){
             pq.pop();
             if(cnt>=100000) return;
           }
-          
+          */
+
+          size_t min= SIZE_MAX;
+          int min_index=-1;
+
+          for(size_t j=0; j<q_size; j++){
+            if(embedding[j]!=-1||extendable[j].first==0) continue;
+            else{ 
+              size_t real_cs_size = extendable[j].first;
+
+              for(Vertex cd: extendable[j].second){
+                if(embedding.end()!=find(embedding.begin(), embedding.end(), cd)) real_cs_size--;
+              }
+              if(real_cs_size>0&&real_cs_size<min){
+                min = real_cs_size;
+                min_index = j;
+              }
+            }
+          }
+
+          if(min_index!=-1) backtrack(min_index);
         }       
         /*in order to search other candidate for same vertex*/
         embedding_size--;
@@ -185,9 +222,11 @@ void Backtrack::update_extendable(Vertex curr){
    
    size_t curr_child_size = query.GetChildSize(curr);
 
-   for(size_t i=0; i<curr_child_size; i++){ /*check if child is extendable vertexd*/
+   for(size_t i=0; i<curr_child_size; i++){ /*check if child is extendable vertex*/
     Vertex child = query.GetChild(curr, i);
-    
+
+    if(embedding[child]!=-1) continue;
+
     if(embedding[curr]==-1){
       extendable[child] = make_pair(0, vector<Vertex>());
     }

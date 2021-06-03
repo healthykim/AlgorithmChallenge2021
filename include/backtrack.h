@@ -12,6 +12,8 @@
 #include "dag.h"
 using namespace std;
 
+typedef pair<pair<size_t, vector<Vertex>>, Vertex> extendable_pair;
+
 class Backtrack {
  public:
   Backtrack(const Graph &d, const Dag &q, const CandidateSet &c);
@@ -25,7 +27,7 @@ class Backtrack {
  void printembedding();
  void update_extendable(Vertex curr);
 
- bool check(); /*check if embedding is correct*/
+ int check(); /*check if embedding is correct*/
 
  size_t cnt; /*# of embedding got*/
 
