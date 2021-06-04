@@ -34,7 +34,7 @@ void Backtrack::PrintAllMatches() {
 void  Backtrack::printembedding(){
  
   /*for checking*/
-  //if(check()!=0) printf("wrong embedding: %d    ", check());  
+  //if(check()!=0) printf("wrong embedding: %d    ", check());
   printf("a ");
 
   for(size_t i=0; i<q_size; i++){

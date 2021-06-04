@@ -4,6 +4,7 @@
  */
 
 #include <stack>
+#include <queue>
 #include <algorithm>
 #include "graph.h"
 
@@ -11,8 +12,6 @@ namespace {
 std::vector<Label> transferred_label;
 void TransferLabel(const std::string &filename) {
     //initialize transferred_label array by order(tranferred_label[smallest label] <- 0)
-    //i don't know why TA did this job.
-    //possibility : given label value is too large
   std::ifstream fin(filename);
 
   if (!fin.is_open()) {
@@ -63,7 +62,6 @@ Graph::Graph(const std::string &filename, bool is_query) {
     TransferLabel(filename);
     }
     std::vector<std::vector<Vertex>> adj_list;
-    dag_adj = std::vector<std::vector<Vertex>>();
 
   // Load Graph
   std::ifstream fin(filename);
@@ -177,12 +175,16 @@ Graph::Graph(const std::string &filename, bool is_query) {
   }
 }
 
+/*
+ * constructor for DAG-graph.
+ * dag.cc overrides this
+ */
 Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool is_query) {
     if (!is_query) {
         //if !is_query, transferred_label array was not initialized.
         TransferLabel(filename);
     }
-   // std::vector<std::vector<Vertex>> adj_list;
+
     std::vector<std::pair<double, Vertex>> priority;
 
     // Load Graph
@@ -233,6 +235,7 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
         }
     }
 
+
     int mark[num_vertices_];
     for (Vertex v = 0; v < num_vertices_; v++) {
         double p = (double) candidateSet.GetCandidateSize(v) / dag_adj[v].size();
@@ -243,47 +246,55 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
      Vertex v = std::min_element(priority.begin(), priority.end())->second;
      root = v;
 
-
-     std::stack<Vertex> s;
-     s.push(v);
+    std::queue<Vertex> q;
+     q.push(v);
      mark[v] = 1;
-     while (!s.empty()) {
-         v = s.top();
+     while (!q.empty()) {
+         /*make dag using backtracking*/
+         v = q.front();
          std::vector<Vertex> neighbor = dag_adj[v];
          if(neighbor.empty()) {
-             s.pop();
+             q.pop();
              continue;
          }
-         Vertex nn = neighbor.front();
-         for (int i = 1; i < neighbor.size(); i++) {
-             if ((priority[nn] > priority[i]) && !mark[i])
-                 nn = neighbor[i];
-             else if (mark[nn]) {
-                 nn = neighbor[i];
+         std::sort(neighbor.begin(), neighbor.end(), [priority](Vertex x, Vertex u){
+             return (priority[x] < priority[u]);
+         });
+         for(int i =0; i<neighbor.size(); i++)
+         {
+             std::vector<Vertex> new_adj;
+             std::vector<Vertex> neighbor_neighbor = dag_adj[neighbor[i]];
+             for(int j =0; j<neighbor_neighbor.size(); j++) {
+                 if (neighbor_neighbor[j]!=v) {
+                     new_adj.push_back(neighbor_neighbor[j]);
+                 } else {
+                     parents[neighbor[i]].push_back(neighbor_neighbor[j]);
+                     num_edges_--;
+                 }
+             }
+             dag_adj[neighbor[i]] = new_adj;
+             if(!mark[neighbor[i]]) {
+                 q.push(neighbor[i]);
+                 mark[neighbor[i]]=1;
              }
          }
-          if (mark[nn])
-              s.pop();
-          else {
-              std::vector<Vertex> new_adj;
-              for(int i =0; i<dag_adj[nn].size(); i++)
-              {
-                  if(!mark[dag_adj[nn][i]]) {
-                      new_adj.push_back(dag_adj[nn][i]);
-                  }
-                  else {
-                      parents[nn].push_back(dag_adj[nn][i]);
-                      num_edges_--;
-                  }
-              }
-              dag_adj[nn] = new_adj;
-              s.push(nn);
-              mark[nn] = 1;
-          }
+         q.pop();
      }
-     printf("dag converted\n");
+
 
     fin.close();
+//    for(int i=0; i<dag_adj.size(); i++){
+//        std::cout<<"parent-child check: "<<i<<std::endl;
+//        for(size_t j=0; j<parents[i].size(); j++) {
+//            if(std::find(dag_adj[parents[i][j]].begin(), dag_adj[parents[i][j]].end(), i)==dag_adj[parents[i][j]].end())
+//                std::cout<<"err"<<std::endl;
+//        }
+//        for(size_t j=0; j<dag_adj[i].size(); j++) {
+//            if(std::find(parents[dag_adj[i][j]].begin(), parents[dag_adj[i][j]].end(), i)==parents[dag_adj[i][j]].end())
+//                std::cout<<"err"<<std::endl;
+//        }
+//        std::cout<<std::endl;
+//    }
 
     adj_array_.resize(num_edges_);
 
