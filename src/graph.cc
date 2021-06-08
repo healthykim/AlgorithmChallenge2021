@@ -223,7 +223,6 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
             label_[id] = l;
             label_set.insert(l);
         } else if (type == 'e') {
-            //labeling by vertex, not by edge. I think this code discard edge label
             Vertex v1, v2;
             Label l;
             fin >> v1 >> v2 >> l;
@@ -238,6 +237,7 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
 
     int mark[num_vertices_];
     for (Vertex v = 0; v < num_vertices_; v++) {
+        //calculate priority for each vertex. priority is determined by (v's candidate set size)/(v's neighbor size)
         double p = (double) candidateSet.GetCandidateSize(v) / dag_adj[v].size();
         priority.push_back(std::pair<double, Vertex>(p, v));
         mark[v] = 0;
@@ -250,10 +250,11 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
      q.push(v);
      mark[v] = 1;
      while (!q.empty()) {
-         /*make dag using backtracking*/
+         /*make dag using BFS*/
          v = q.front();
          std::vector<Vertex> neighbor = dag_adj[v];
          if(neighbor.empty()) {
+             //if there is no neighbor, do BFS about next vertex
              q.pop();
              continue;
          }
@@ -262,6 +263,7 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
          });
          for(int i =0; i<neighbor.size(); i++)
          {
+             //remove the incoming edge of v and push v's neighbors into queue by ascending order of priority
              std::vector<Vertex> new_adj;
              std::vector<Vertex> neighbor_neighbor = dag_adj[neighbor[i]];
              for(int j =0; j<neighbor_neighbor.size(); j++) {
@@ -275,6 +277,7 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
              dag_adj[neighbor[i]] = new_adj;
              if(!mark[neighbor[i]]) {
                  q.push(neighbor[i]);
+                 //mark the discovered edge
                  mark[neighbor[i]]=1;
              }
          }
@@ -283,18 +286,6 @@ Graph::Graph(const std::string &filename, const CandidateSet &candidateSet, bool
 
 
     fin.close();
-//    for(int i=0; i<dag_adj.size(); i++){
-//        std::cout<<"parent-child check: "<<i<<std::endl;
-//        for(size_t j=0; j<parents[i].size(); j++) {
-//            if(std::find(dag_adj[parents[i][j]].begin(), dag_adj[parents[i][j]].end(), i)==dag_adj[parents[i][j]].end())
-//                std::cout<<"err"<<std::endl;
-//        }
-//        for(size_t j=0; j<dag_adj[i].size(); j++) {
-//            if(std::find(parents[dag_adj[i][j]].begin(), parents[dag_adj[i][j]].end(), i)==parents[dag_adj[i][j]].end())
-//                std::cout<<"err"<<std::endl;
-//        }
-//        std::cout<<std::endl;
-//    }
 
     adj_array_.resize(num_edges_);
 
